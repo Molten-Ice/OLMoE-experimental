@@ -1,0 +1,21 @@
+pip install --upgrade setuptools
+python3 -m pip install --upgrade pip
+pip install "setuptools<69.0.0"
+
+pip install -e .
+
+pip install git+https://github.com/Muennighoff/megablocks.git@olmoe
+pip install dolma
+
+python download_dataset.py
+
+
+dolma tokens \
+--documents datasets \
+--destination tokens \
+--tokenizer.name_or_path 'allenai/gpt-neox-olmo-dolma-v1_5' \
+--max_size '2_147_483_648' \
+--seed 0 \
+--tokenizer.eos_token_id 50279 \
+--tokenizer.pad_token_id 1 \
+--processes 20
