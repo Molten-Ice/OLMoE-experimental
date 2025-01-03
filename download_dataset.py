@@ -11,6 +11,8 @@ with open('../huggingface_apikey.json', 'r') as f:
 
 huggingface_hub.login(token=api_key)
 
+os.makedirs('data', exist_ok=True)
+
 def get_filepath_to_size():
     api = HfApi()
     repo_info = api.repo_info(
@@ -19,75 +21,9 @@ def get_filepath_to_size():
         files_metadata=True
     )
     filepath_to_size = {sibling.rfilename: sibling.size for sibling in repo_info.siblings}
-    with open('filepath_to_size.json', 'w') as f:
+    with open('data/filepath_to_size.json', 'w') as f:
         json.dump(filepath_to_size, f, indent=2)
     return filepath_to_size
-
-
-def get_base_name(file_path):
-    # Get the file name without path and extension
-    name = Path(file_path).stem
-    # Remove .json if it exists (for double extensions like .json.gz)
-    name = name.replace('.json', '')
-    # Strip trailing numbers and hyphens
-    while name and (name[-1].isdigit() or name[-1] == '-'):
-        name = name[:-1]
-    name = name.strip()
-    # Return 'folder' if name is empty after stripping
-    if not name:
-        return 'folder'
-    return name
-
-def build_tree(filepath_to_size):
-    file_dict = {}
-    for file_path, size in filepath_to_size.items():
-        parts = Path(file_path).parts
-        current = file_dict
-        
-        # Navigate to the parent directory
-        for part in parts[:-1]:
-            if part not in current:
-                current[part] = {}
-            current = current[part]
-        
-        # Get file name and base name
-        file_name = parts[-1]
-        base_name = get_base_name(file_path)
-        
-        # Check if we need to create a subdirectory
-        files_in_dir = [f for f in current.values() if isinstance(f, dict) and 'path' in f]
-        existing_base_names = {get_base_name(f['path']) for f in files_in_dir}
-        
-        # Only create subdirectory if we have multiple base names
-        if len(existing_base_names) > 1 or (existing_base_names and base_name not in existing_base_names):
-            # Create base_name subdirectory if it doesn't exist
-            if base_name not in current:
-                current[base_name] = {'type': 'directory'}
-            # Add file to its base_name subdirectory
-            current[base_name][file_name] = {
-                'type': 'file',
-                'path': file_path,
-                'size': size,
-                'base_name': base_name
-            }
-        else:
-            # Add file directly to current directory
-            current[file_name] = {
-                'type': 'file',
-                'path': file_path,
-                'size': size,
-                'base_name': base_name
-            }
-
-    # Mark directories
-    def mark_directories(node):
-        for name, content in node.items():
-            if isinstance(content, dict) and 'type' not in content:
-                content['type'] = 'directory'
-                mark_directories(content)
-    
-    mark_directories(file_dict)
-    return file_dict
 
 
 def build_directory_tree(filepath_to_size):
@@ -145,14 +81,42 @@ def build_directory_tree(filepath_to_size):
     # Utility to get the "base name" after trimming digits/hyphens.
     # -------------------------------------------------------------------------
     def get_base_name(file_path):
-        name = Path(file_path).stem  # e.g. "algebraic-stack-train-0000"
-        # Remove any trailing ".json" inside the stem (handles .json.gz, .json.zst, etc.)
-        if name.endswith(".json"):
-            name = name[: -len(".json")]
-        # Strip trailing digits or hyphens
-        while name and (name[-1].isdigit() or name[-1] == "-"):
-            name = name[:-1]
+        """
+        Extracts a 'base name' from a file path by removing multiple known suffixes
+        (like .gz, .zst, .xz, .bz2, .jsonl, .json, etc.). Then checks if the remainder
+        is purely numeric. If so, returns 'numeric' to group them all together.
+        Otherwise removes trailing digits/hyphens. Returns 'folder' if nothing remains.
+        """
+        import re
+        p = Path(file_path)
+        
+        # Start with the file name (including extensions)
+        name = p.name
+        
+        # List of known suffixes to remove:
+        known_suffixes = [".gz", ".zst", ".xz", ".bz2", ".jsonl", ".json"]
+        
+        # Keep stripping suffixes as long as they match
+        changed = True
+        while changed:
+            changed = False
+            for sfx in known_suffixes:
+                if name.endswith(sfx):
+                    name = name[: -len(sfx)]
+                    changed = True
+        
+        # Now check if purely numeric:
+        if name.isdigit():
+            return 'numeric'  # group all numeric files together
+        
+        # If it's all digits/hyphens, call it 'folder'
+        if all(c.isdigit() or c == '-' for c in name):
+            return 'folder'
+        
+        # Otherwise, strip trailing digits/hyphens from the end
+        name = re.sub(r'[\d-]+$', '', name)
         name = name.strip()
+        
         return name if name else "folder"
 
     # -------------------------------------------------------------------------
@@ -227,33 +191,32 @@ def build_directory_tree(filepath_to_size):
     return final_structure
 
 def print_tree(node, prefix="", is_last=True, name="", is_root=True):
-    """Print the tree structure in a readable format, limiting to 3 files per directory."""
+    """Build a string representation of the tree structure, limiting to 3 files per directory."""
+    result = []
+    
     if not is_root:
         connector = "└── " if is_last else "├── "
         
         if isinstance(node, dict) and 'path' in node:
             size = node.get('size', 0)
             size_str = f" ({size / 1_000_000_000:.2f} GB)" if size > 100_000_000 else f" ({size / 1_000_000:.1f} MB)"
-            print(prefix + connector + Path(node['path']).name + size_str)
+            result.append(prefix + connector + Path(node['path']).name + size_str)
         else:
-            # Calculate total size for directory
             total_size = calculate_dir_size(node)
             size_str = f" ({total_size / 1_000_000_000:.2f} GB)" if total_size > 100_000_000 else f" ({total_size / 1_000_000:.1f} MB)"
             display_name = name if name else "[Directory]"
-            print(prefix + connector + display_name + size_str)
+            result.append(prefix + connector + display_name + size_str)
     else:
         total_size = calculate_dir_size(tree_structure['data'])
         size_str = f" ({total_size / 1_000_000_000:.2f} GB)" if total_size > 100_000_000 else f" ({total_size / 1_000_000:.1f} MB)"
-        print(f"data{size_str}")
+        result.append(f"data{size_str}")
 
     if isinstance(node, dict):
         children = {k: v for k, v in node.items() if k not in ['type', 'path', 'size', 'base_name']}
         items = list(children.items())
         
-        # Check if this is a leaf directory (contains only files)
         is_leaf_dir = all(isinstance(v, dict) and 'path' in v for v in children.values())
         
-        # Apply limit only for leaf directories
         display_items = items[:3] if is_leaf_dir else items
         hidden_items = items[3:] if is_leaf_dir and len(items) > 3 else []
         hidden_count = len(hidden_items)
@@ -261,7 +224,7 @@ def print_tree(node, prefix="", is_last=True, name="", is_root=True):
         for i, (child_name, child) in enumerate(display_items):
             new_prefix = prefix if is_root else (prefix + ("    " if is_last else "│   "))
             is_last_item = (i == len(display_items) - 1) and (hidden_count == 0)
-            print_tree(child, new_prefix, is_last_item, child_name, is_root=False)
+            result.extend(print_tree(child, new_prefix, is_last_item, child_name, is_root=False))
         
         if hidden_count > 0:
             new_prefix = prefix if is_root else (prefix + ("    " if is_last else "│   "))
@@ -270,7 +233,9 @@ def print_tree(node, prefix="", is_last=True, name="", is_root=True):
                 size_str = f"{hidden_size / 1_000_000:.1f}MB"
             else:
                 size_str = f"{hidden_size / 1_000_000_000:.1f}GB"
-            print(f"{new_prefix}└── ... ({hidden_count} hidden files, {size_str} total)")
+            result.append(f"{new_prefix}└── ... ({hidden_count} hidden files, {size_str} total)")
+
+    return result
 
 
 def calculate_dir_size(node):
@@ -282,19 +247,50 @@ def calculate_dir_size(node):
             return sum(calculate_dir_size(child) for child in node.values() if isinstance(child, dict))
     return 0
 
+## Visualize the dataset structure ##
 
-filepath_to_size = get_filepath_to_size()
-with open('filepath_to_size.json', 'r') as f:
+# filepath_to_size = get_filepath_to_size()
+with open('data/filepath_to_size.json', 'r') as f:
     filepath_to_size = json.load(f)
 
+# filepath_to_size = {k: v for k, v in filepath_to_size.items() if 'open-web-math' in k}
+
 print('Building tree...')
-# tree_structure = build_tree(filepath_to_size)
 tree_structure = build_directory_tree(filepath_to_size)
 print('Tree built.')
 
-output_path = 'dataset_structure.json'
+output_path = 'data/dataset_structure.json'
 with open(output_path, 'w') as f:
     json.dump(tree_structure, f, indent=2)
 
+
+tree_output = '\n'.join(print_tree(tree_structure))
+with open('data/dataset_structure.txt', 'w') as f:
+    f.write(tree_output)
+
 print('-'*100)
-print_tree(tree_structure)
+print(tree_output)
+print('-'*100)
+
+## Download the dataset ##
+# Define the base path for downloads
+os.makedirs('data', exist_ok=True)
+dataset_path = "data/datasets"
+os.makedirs(dataset_path, exist_ok=True)
+
+# Download files dclm-0000 through dclm-0004
+for i in range(5):
+    file_name = f"dclm-{i:04d}.json.zst"
+    local_path = os.path.join(dataset_path, file_name)
+
+    if os.path.exists(local_path):
+        print(f"Skipping {file_name} because it already exists.")
+        continue
+    
+    print(f"Downloading {file_name}...")
+    huggingface_hub.hf_hub_download(
+        repo_id="allenai/OLMoE-mix-0924",
+        repo_type="dataset",
+        filename=f"data/dclm/{file_name}", # remote path
+        local_dir=dataset_path
+    )

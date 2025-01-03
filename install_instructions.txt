@@ -10,8 +10,14 @@ pip install dolma
 python download_dataset.py
 
 
+python -m venv olmoe-env
+source olmoe-env/bin/activate
+
+pip install "tokenizers==0.19.1"
+pip install dolma==1.0.14.post1
+
 dolma tokens \
---documents datasets \
+--documents data/datasets \
 --destination tokens \
 --tokenizer.name_or_path 'allenai/gpt-neox-olmo-dolma-v1_5' \
 --max_size '2_147_483_648' \

@@ -9,7 +9,7 @@
     "path": "README.md",
     "size": 4220,
     "type": "file",
-    "base_name": "README"
+    "base_name": "README.md"
   },
   "data": {
     "algebraic-stack": {
@@ -11941,83 +11941,86 @@
       "type": "directory"
     },
     "open-web-math": {
-      "041.jsonl.gz": {
-        "path": "data/open-web-math/041.jsonl.gz",
-        "size": 1426542535,
-        "type": "file",
-        "base_name": "041.jsonl"
-      },
-      "042.jsonl.gz": {
-        "path": "data/open-web-math/042.jsonl.gz",
-        "size": 1418877575,
-        "type": "file",
-        "base_name": "042.jsonl"
-      },
-      "043.jsonl.gz": {
-        "path": "data/open-web-math/043.jsonl.gz",
-        "size": 562276045,
-        "type": "file",
-        "base_name": "043.jsonl"
-      },
-      "044.jsonl.gz": {
-        "path": "data/open-web-math/044.jsonl.gz",
-        "size": 1226336850,
-        "type": "file",
-        "base_name": "044.jsonl"
-      },
-      "045.jsonl.gz": {
-        "path": "data/open-web-math/045.jsonl.gz",
-        "size": 563994582,
-        "type": "file",
-        "base_name": "045.jsonl"
-      },
-      "046.jsonl.gz": {
-        "path": "data/open-web-math/046.jsonl.gz",
-        "size": 38682835,
-        "type": "file",
-        "base_name": "046.jsonl"
-      },
-      "047.jsonl.gz": {
-        "path": "data/open-web-math/047.jsonl.gz",
-        "size": 1368628729,
-        "type": "file",
-        "base_name": "047.jsonl"
-      },
-      "048.jsonl.gz": {
-        "path": "data/open-web-math/048.jsonl.gz",
-        "size": 1414130072,
-        "type": "file",
-        "base_name": "048.jsonl"
-      },
-      "049.jsonl.gz": {
-        "path": "data/open-web-math/049.jsonl.gz",
-        "size": 1216586820,
-        "type": "file",
-        "base_name": "049.jsonl"
-      },
-      "050.jsonl.gz": {
-        "path": "data/open-web-math/050.jsonl.gz",
-        "size": 1312801526,
-        "type": "file",
-        "base_name": "050.jsonl"
-      },
-      "051.jsonl.gz": {
-        "path": "data/open-web-math/051.jsonl.gz",
-        "size": 560316810,
-        "type": "file",
-        "base_name": "051.jsonl"
-      },
-      "052.jsonl.gz": {
-        "path": "data/open-web-math/052.jsonl.gz",
-        "size": 562423525,
-        "type": "file",
-        "base_name": "052.jsonl"
-      },
-      "053.jsonl.gz": {
-        "path": "data/open-web-math/053.jsonl.gz",
-        "size": 1234372587,
-        "type": "file",
-        "base_name": "053.jsonl"
+      "numeric": {
+        "type": "directory",
+        "041.jsonl.gz": {
+          "path": "data/open-web-math/041.jsonl.gz",
+          "size": 1426542535,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "042.jsonl.gz": {
+          "path": "data/open-web-math/042.jsonl.gz",
+          "size": 1418877575,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "043.jsonl.gz": {
+          "path": "data/open-web-math/043.jsonl.gz",
+          "size": 562276045,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "044.jsonl.gz": {
+          "path": "data/open-web-math/044.jsonl.gz",
+          "size": 1226336850,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "045.jsonl.gz": {
+          "path": "data/open-web-math/045.jsonl.gz",
+          "size": 563994582,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "046.jsonl.gz": {
+          "path": "data/open-web-math/046.jsonl.gz",
+          "size": 38682835,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "047.jsonl.gz": {
+          "path": "data/open-web-math/047.jsonl.gz",
+          "size": 1368628729,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "048.jsonl.gz": {
+          "path": "data/open-web-math/048.jsonl.gz",
+          "size": 1414130072,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "049.jsonl.gz": {
+          "path": "data/open-web-math/049.jsonl.gz",
+          "size": 1216586820,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "050.jsonl.gz": {
+          "path": "data/open-web-math/050.jsonl.gz",
+          "size": 1312801526,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "051.jsonl.gz": {
+          "path": "data/open-web-math/051.jsonl.gz",
+          "size": 560316810,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "052.jsonl.gz": {
+          "path": "data/open-web-math/052.jsonl.gz",
+          "size": 562423525,
+          "type": "file",
+          "base_name": "numeric"
+        },
+        "053.jsonl.gz": {
+          "path": "data/open-web-math/053.jsonl.gz",
+          "size": 1234372587,
+          "type": "file",
+          "base_name": "numeric"
+        }
       },
       "open-web-math-train": {
         "type": "directory",
@@ -17586,7 +17589,7 @@
     "path": "olmoe-mix.png",
     "size": 39532,
     "type": "file",
-    "base_name": "olmoe-mix"
+    "base_name": "olmoe-mix.png"
   },
   "type": "directory"
 }
