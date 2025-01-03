@@ -56,3 +56,7 @@ site/
 /wandb/
 /scratch/
 core
+
+data/datasets/
+data/tokens/
+dolma-env/
